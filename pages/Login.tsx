@@ -7,25 +7,44 @@ const Login: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Mock authentication logic
-    if (email && password) {
-      const user = {
-        id: '123',
-        name: email.split('@')[0],
-        email: email,
-      };
-      dispatch(login(user));
-      
-      const params = new URLSearchParams(location.search);
-      const redirect = params.get('redirect');
-      navigate(redirect === 'checkout' ? '/checkout' : '/');
+    setError('');
+
+    if (!email || !password) {
+      setError('Please enter both email and password.');
+      return;
     }
+
+    // Basic validation to simulate "wrong" credentials
+    if (!email.includes('@') || !email.includes('.')) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Incorrect password! Password must be at least 6 characters.');
+      return;
+    }
+
+    // Since this is a frontend clone without a real backend,
+    // we will now accept ANY email and password that passes the above basic checks.
+    const user = {
+      id: Date.now().toString(),
+      name: email.split('@')[0],
+      email: email,
+    };
+    
+    dispatch(login(user));
+    
+    const params = new URLSearchParams(location.search);
+    const redirect = params.get('redirect');
+    navigate(redirect === 'checkout' ? '/checkout' : '/');
   };
 
   return (
@@ -50,6 +69,11 @@ const Login: React.FC = () => {
         {/* Right Form Panel */}
         <div className="w-full md:w-3/5 p-8 md:p-12 flex flex-col justify-between">
            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+                {error && (
+                   <div className="bg-red-50 text-red-500 p-3 rounded text-sm border border-red-200">
+                       {error}
+                   </div>
+                )}
                 <div>
                   <input 
                       type="email" 

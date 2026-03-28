@@ -9,11 +9,36 @@ const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const product = getProductById(Number(id));
+
+  // Try mock data first, then fall back to localStorage (live products)
+  let product: any = getProductById(Number(id));
+  if (!product && id) {
+    const liveProducts = JSON.parse(localStorage.getItem('liveProducts') || '{}');
+    product = liveProducts[id] || null;
+  }
+  // Ensure required fields exist for live products
+  if (product) {
+    product = {
+      images: [],
+      description: product.title,
+      reviewCount: product.reviewCount || product.reviews || 0,
+      originalPrice: product.originalPrice || Math.round((product.price || 0) * 1.2),
+      discount: product.discount || 10,
+      isAssured: product.isAssured || false,
+      ...product,
+    };
+  }
+
   const [activeImage, setActiveImage] = useState(product?.image || '');
 
   if (!product) {
-    return <div className="p-8 text-center">Product not found</div>;
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-xl font-bold text-gray-700 mb-2">Product not found</h2>
+        <p className="text-gray-500 mb-4">Try searching for the product again.</p>
+        <button onClick={() => navigate(-1)} className="bg-blue-600 text-white px-6 py-2 rounded-full font-bold">Go Back</button>
+      </div>
+    );
   }
 
   const handleAddToCart = () => {
